@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Activity, Heart, Apple, Brain, Bone, Salad, Users, UserCircle, Baby, Wind, Droplet, Briefcase, MessageSquare, TrendingUp, Calendar, Clock, Award, Target, Zap, Shield, ArrowLeft, Send, Loader2 } from "lucide-react";
+import { Activity, Heart, Apple, Brain, Bone, Salad, Users, UserCircle, Baby, Wind, Droplet, Briefcase, MessageSquare, TrendingUp, Calendar, Clock, Award, Target, Zap, Shield, ArrowLeft, Send, Loader2, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -446,6 +446,89 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
         </div>
+        {/* Advanced Features */}
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2 flex items-center gap-2">
+            <Shield className="h-6 w-6 text-purple-600" />
+            Advanced Medical Features
+          </h2>
+          <p className="text-gray-600 mb-6">Access professional-grade medical tools and research capabilities</p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Card 
+              className="cursor-pointer hover:shadow-xl transition-all duration-300 border-2 border-purple-200 bg-purple-50 hover:scale-105"
+              onClick={() => router.push("/medical-scanner")}
+            >
+              <CardHeader>
+                <div className="flex items-start gap-4">
+                  <div className="p-3 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 shadow-lg">
+                    <Activity className="h-6 w-6 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <CardTitle className="text-lg mb-1">AI Medical Scanner</CardTitle>
+                    <CardDescription className="text-sm">Upload and analyze lab reports, X-rays, MRI, and CT scans with AI</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-wrap gap-2">
+                  <Badge variant="secondary" className="text-xs">Lab Reports</Badge>
+                  <Badge variant="secondary" className="text-xs">X-Ray Analysis</Badge>
+                  <Badge variant="secondary" className="text-xs">MRI/CT Scans</Badge>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card 
+              className="cursor-pointer hover:shadow-xl transition-all duration-300 border-2 border-indigo-200 bg-indigo-50 hover:scale-105"
+              onClick={() => router.push("/report-generator")}
+            >
+              <CardHeader>
+                <div className="flex items-start gap-4">
+                  <div className="p-3 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 shadow-lg">
+                    <FileText className="h-6 w-6 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <CardTitle className="text-lg mb-1">Patient Report Generator</CardTitle>
+                    <CardDescription className="text-sm">Generate comprehensive medical reports with AI assistance</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-wrap gap-2">
+                  <Badge variant="secondary" className="text-xs">Health Reports</Badge>
+                  <Badge variant="secondary" className="text-xs">AI Analysis</Badge>
+                  <Badge variant="secondary" className="text-xs">PDF Export</Badge>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card 
+              className="cursor-pointer hover:shadow-xl transition-all duration-300 border-2 border-blue-200 bg-blue-50 hover:scale-105"
+              onClick={() => router.push("/research-panel")}
+            >
+              <CardHeader>
+                <div className="flex items-start gap-4">
+                  <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 shadow-lg">
+                    <Users className="h-6 w-6 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <CardTitle className="text-lg mb-1">Research Panel</CardTitle>
+                    <CardDescription className="text-sm">Conduct medical research studies and analyze health data</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-wrap gap-2">
+                  <Badge variant="secondary" className="text-xs">Clinical Studies</Badge>
+                  <Badge variant="secondary" className="text-xs">Data Analytics</Badge>
+                  <Badge variant="secondary" className="text-xs">Research Tools</Badge>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
 
         {/* AI Agents Grid */}
         <div className="mb-6">

@@ -6,16 +6,6 @@
 
 OpenMedX is a comprehensive, software-only health AI platform that provides personalized health advisory services through 12 specialized AI health coaches. Built with cutting-edge machine learning, evidence-based medical knowledge, and a strong focus on privacy and ethics.
 
-## 🚀 Live Demo
-
-**Website:** https://openmedx.lindy.site
-
-### Test the Platform:
-1. Visit https://openmedx.lindy.site/test-setup.html to create a test user
-2. You'll be automatically redirected to the dashboard
-3. Select any of the 12 AI health coaches
-4. Start asking health questions!
-
 ## 🏗️ Complete System Architecture
 
 ### 8-Layer Architecture:
