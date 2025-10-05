@@ -6,10 +6,7 @@
 const MEDGEMMA_MODEL = "google/medgemma-4b-it";
 const HUGGINGFACE_API_URL = `https://api-inference.huggingface.co/models/${MEDGEMMA_MODEL}`;
 
-interface MedGemmaResponse {
-  generated_text?: string;
-  error?: string;
-}
+
 
 /**
  * Call MedGemma API with retry logic
@@ -123,8 +120,8 @@ Format your response as a structured medical report.`;
  * Generate patient medical report
  */
 export async function generatePatientReport(
-  patientInfo: any,
-  vitalSigns: any,
+  patientInfo: Record<string, unknown>,
+  vitalSigns: Record<string, unknown>,
   chiefComplaint: string,
   symptoms: string[]
 ): Promise<{
@@ -191,7 +188,7 @@ Format your response as a professional medical report.`;
 export async function analyzeResearchData(
   studyTitle: string,
   studyDescription: string,
-  participantData?: any
+  participantData?: Record<string, unknown>
 ): Promise<{
   insights: string[];
   recommendations: string[];
@@ -364,7 +361,13 @@ function calculateConfidence(text: string): number {
 
 // Fallback functions for when AI is unavailable
 
-function getFallbackScanAnalysis(scanType: string): any {
+function getFallbackScanAnalysis(scanType: string): {
+  findings: string[];
+  recommendations: string[];
+  severity: "normal" | "attention" | "urgent";
+  confidence: number;
+  detailedAnalysis: string;
+} {
   return {
     findings: [
       `${scanType} scan uploaded and processed`,
@@ -382,7 +385,13 @@ function getFallbackScanAnalysis(scanType: string): any {
   };
 }
 
-function getFallbackPatientReport(chiefComplaint: string, symptoms: string[]): any {
+function getFallbackPatientReport(chiefComplaint: string, _symptoms: string[]): {
+  diagnosis: string;
+  recommendations: string[];
+  medications: string[];
+  followUp: string;
+  detailedAssessment: string;
+} {
   return {
     diagnosis: `Preliminary assessment based on chief complaint: ${chiefComplaint}. Further evaluation recommended.`,
     recommendations: [
@@ -400,7 +409,12 @@ function getFallbackPatientReport(chiefComplaint: string, symptoms: string[]): a
   };
 }
 
-function getFallbackResearchAnalysis(): any {
+function getFallbackResearchAnalysis(): {
+  insights: string[];
+  recommendations: string[];
+  statisticalSummary: string;
+  nextSteps: string[];
+} {
   return {
     insights: [
       "Study data collected and organized",

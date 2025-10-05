@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Activity, Heart, Apple, Brain, Bone, Salad, Users, UserCircle, Baby, Wind, Droplet, Briefcase, MessageSquare, TrendingUp, Calendar, Clock, Award, Target, Zap, Shield, ArrowLeft, Send, Loader2, FileText } from "lucide-react";
+import { Activity, Heart, Apple, Brain, Bone, Salad, Users, UserCircle, Baby, Wind, Droplet, Briefcase, MessageSquare, TrendingUp, Calendar, Target, Zap, Shield, ArrowLeft, Send, Loader2, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";

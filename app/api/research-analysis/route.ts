@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-async function performResearchAnalysis(analysisType: string, studyData?: any) {
+async function performResearchAnalysis(analysisType: string, _studyData?: Record<string, unknown>) {
   const timestamp = new Date().toISOString();
   const analysisId = `ANALYSIS-${Date.now()}`;
 

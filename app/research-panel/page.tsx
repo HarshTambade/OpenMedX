@@ -33,7 +33,7 @@ interface StudyData {
 
 export default function ResearchPanelPage() {
   const router = useRouter();
-  const [userProfile, setUserProfile] = useState<any>(null);
+  const [userProfile, setUserProfile] = useState<Record<string, unknown> | null>(null);
   const [activeTab, setActiveTab] = useState("overview");
   const [isCreatingStudy, setIsCreatingStudy] = useState(false);
   

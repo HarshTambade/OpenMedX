@@ -74,6 +74,7 @@ export function checkRedFlags(message: string): boolean {
 
 // Function to get relevant medical knowledge
 export function getMedicalKnowledge(category: string, topic: string): string {
-  const knowledge = MEDICAL_KNOWLEDGE as any;
-  return knowledge[category]?.[topic] || "";
+  const knowledge = MEDICAL_KNOWLEDGE as Record<string, unknown>;
+  const categoryData = knowledge[category] as Record<string, string> | undefined;
+  return categoryData?.[topic] || "";
 }
