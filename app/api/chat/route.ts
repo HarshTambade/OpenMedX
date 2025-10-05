@@ -1,9 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { HfInference } from "@huggingface/inference";
 import { checkRedFlags, getMedicalKnowledge } from "@/lib/medicalKnowledge";
-
-// Initialize Hugging Face client
-const hf = new HfInference(process.env.HUGGINGFACE_API_KEY);
 
 // Agent-specific system prompts
 const AGENT_PROMPTS: Record<string, string> = {
@@ -51,50 +47,60 @@ ${userProfile.currentMedications ? `- Current Medications: ${userProfile.current
     // Get agent-specific prompt
     const systemPrompt = AGENT_PROMPTS[agentId] || AGENT_PROMPTS.general;
 
-    // Construct the full prompt
-    const fullPrompt = `${systemPrompt}
+    // Try Hugging Face API first
+    const apiKey = process.env.HUGGINGFACE_API_KEY;
+    
+    if (apiKey && apiKey !== 'your_huggingface_api_key_here') {
+      try {
+        const response = await fetch(
+          "https://api-inference.huggingface.co/models/TinyLlama/TinyLlama-1.1B-Chat-v1.0",
+          {
+            method: "POST",
+            headers: {
+              "Authorization": `Bearer ${apiKey}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              inputs: `${systemPrompt}\n\n${userContext}\n\nRelevant Medical Knowledge:\n${knowledge}\n\nUser Question: ${message}\n\nPlease provide a helpful, evidence-based response. Keep it concise (2-3 paragraphs).`,
+              parameters: {
+                max_new_tokens: 400,
+                temperature: 0.7,
+                top_p: 0.9,
+                return_full_text: false
+              }
+            }),
+          }
+        );
 
-${userContext}
+        if (response.ok) {
+          const data = await response.json();
+          let aiResponse = "";
+          
+          if (Array.isArray(data) && data[0]?.generated_text) {
+            aiResponse = data[0].generated_text.trim();
+          } else if (data.generated_text) {
+            aiResponse = data.generated_text.trim();
+          }
 
-Relevant Medical Knowledge:
-${knowledge}
+          if (aiResponse) {
+            const disclaimer = "\n\n⚠️ Disclaimer: This information is for educational purposes only and is not a substitute for professional medical advice, diagnosis, or treatment. Always consult with a qualified healthcare provider for medical concerns.";
+            
+            const finalResponse = aiResponse.includes("Disclaimer") || aiResponse.includes("disclaimer") 
+              ? aiResponse 
+              : aiResponse + disclaimer;
 
-User Question: ${message}
-
-Please provide a helpful, evidence-based response. Keep it concise (2-3 paragraphs). Always include a disclaimer that this is advisory information only and not a substitute for professional medical advice.`;
-
-    try {
-      // Call Hugging Face API
-      const response = await hf.textGeneration({
-        model: "TinyLlama/TinyLlama-1.1B-Chat-v1.0",
-        inputs: fullPrompt,
-        parameters: {
-          max_new_tokens: 400,
-          temperature: 0.7,
-          top_p: 0.9,
-          return_full_text: false
+            return NextResponse.json({ response: finalResponse });
+          }
         }
-      });
-
-      const aiResponse = response.generated_text.trim();
-
-      // Add disclaimer if not already present
-      const disclaimer = "\n\n⚠️ Disclaimer: This information is for educational purposes only and is not a substitute for professional medical advice, diagnosis, or treatment. Always consult with a qualified healthcare provider for medical concerns.";
-      
-      const finalResponse = aiResponse.includes("Disclaimer") || aiResponse.includes("disclaimer") 
-        ? aiResponse 
-        : aiResponse + disclaimer;
-
-      return NextResponse.json({ response: finalResponse });
-
-    } catch (apiError) {
-      console.error("Hugging Face API error:", apiError);
-      
-      // Fallback response based on medical knowledge
-      const fallbackResponse = `Based on evidence-based medical knowledge:\n\n${knowledge}\n\nFor personalized medical advice specific to your situation, please consult with a healthcare professional.\n\n⚠️ Disclaimer: This information is for educational purposes only and is not a substitute for professional medical advice, diagnosis, or treatment.`;
-      
-      return NextResponse.json({ response: fallbackResponse });
+      } catch (apiError) {
+        console.error("Hugging Face API error:", apiError);
+      }
     }
+
+    // Fallback response based on medical knowledge
+    const fallbackResponse = `${systemPrompt.split('.')[0]}.\n\n${knowledge}\n\nBased on your profile (Age: ${userProfile?.age || 'N/A'}, BMI: ${userProfile?.bmi || 'N/A'}), I recommend consulting with a healthcare professional for personalized advice specific to your situation.\n\n⚠️ Disclaimer: This information is for educational purposes only and is not a substitute for professional medical advice, diagnosis, or treatment.`;
+    
+    return NextResponse.json({ response: fallbackResponse });
 
   } catch (error) {
     console.error("Error in chat API:", error);

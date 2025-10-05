@@ -23,18 +23,33 @@ export default function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Simple authentication (will be replaced with proper auth)
+    // Check if user profile exists
+    const storedProfile = localStorage.getItem("userProfile");
     const storedUser = localStorage.getItem("openmedx_user");
-    if (storedUser) {
-      const user = JSON.parse(storedUser);
-      if (user.email === formData.email && user.password === formData.password) {
+    
+    if (storedProfile) {
+      // User completed full registration
+      const profile = JSON.parse(storedProfile);
+      const user = storedUser ? JSON.parse(storedUser) : null;
+      
+      if (profile.email === formData.email && user && user.password === formData.password) {
         localStorage.setItem("openmedx_authenticated", "true");
         router.push("/dashboard");
       } else {
         alert("Invalid credentials");
       }
+    } else if (storedUser) {
+      // User only completed step 1
+      const user = JSON.parse(storedUser);
+      if (user.email === formData.email && user.password === formData.password) {
+        alert("Please complete your registration first.");
+        router.push("/register");
+      } else {
+        alert("Invalid credentials");
+      }
     } else {
       alert("No account found. Please register first.");
+      router.push("/register");
     }
   };
 

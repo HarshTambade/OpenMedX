@@ -1,295 +1,493 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Activity, Brain, Heart, Apple, Bone, Salad, Users, Baby, Wind, Droplet, Briefcase, TrendingUp, MessageSquare, LogOut } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Activity, Heart, Apple, Brain, Bone, Salad, Users, UserCircle, Baby, Wind, Droplet, Briefcase, MessageSquare, TrendingUp, Calendar, Clock, Award, Target, Zap, Shield, ArrowLeft, Send, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+
+interface UserProfile {
+  email: string;
+  fullName: string;
+  age: number;
+  gender: string;
+  height: number;
+  weight: number;
+  bmi: number;
+  medicalHistory?: string;
+  currentMedications?: string;
+  allergies?: string;
+  lifestyleGoals: string;
+  emergencyContact: {
+    name: string;
+    phone: string;
+  };
+}
+
+interface Message {
+  role: "user" | "assistant";
+  content: string;
+  timestamp: Date;
+}
 
 const AI_AGENTS = [
-  { id: "general", name: "General Wellness Coach", icon: Activity, color: "blue", description: "Overall health and preventive care" },
-  { id: "cardio", name: "Cardio Wellness Coach", icon: Heart, color: "red", description: "Heart health and cardiovascular fitness" },
-  { id: "metabolic", name: "Metabolic Health Coach", icon: Apple, color: "green", description: "Metabolism, diabetes, and weight management" },
-  { id: "mental", name: "Mental Wellness Coach", icon: Brain, color: "purple", description: "Stress, anxiety, and mental health" },
-  { id: "musculoskeletal", name: "Musculoskeletal Coach", icon: Bone, color: "orange", description: "Bones, joints, and physical therapy" },
-  { id: "nutrition", name: "Nutrition & Lifestyle Coach", icon: Salad, color: "lime", description: "Diet, nutrition, and healthy habits" },
-  { id: "womens", name: "Women's Health Coach", icon: Users, color: "pink", description: "Women's health and wellness" },
-  { id: "senior", name: "Senior Health Coach", icon: Users, color: "indigo", description: "Health for older adults" },
-  { id: "pediatric", name: "Pediatric Wellness Coach", icon: Baby, color: "yellow", description: "Children's health and development" },
-  { id: "respiratory", name: "Respiratory Health Coach", icon: Wind, color: "sky", description: "Lung health and breathing" },
-  { id: "digestive", name: "Digestive Health Coach", icon: Droplet, color: "teal", description: "Gut health and digestion" },
-  { id: "occupational", name: "Occupational Wellness Coach", icon: Briefcase, color: "slate", description: "Work-life balance and ergonomics" },
+  {
+    id: "general",
+    name: "General Wellness Coach",
+    icon: Activity,
+    color: "from-blue-500 to-cyan-500",
+    bgColor: "bg-blue-50",
+    borderColor: "border-blue-200",
+    description: "Preventive care, lifestyle optimization, and overall wellness guidance",
+    specialties: ["Preventive Health", "Lifestyle", "Wellness Goals"],
+  },
+  {
+    id: "cardio",
+    name: "Cardio Wellness Coach",
+    icon: Heart,
+    color: "from-red-500 to-pink-500",
+    bgColor: "bg-red-50",
+    borderColor: "border-red-200",
+    description: "Heart health, cardiovascular fitness, and blood pressure management",
+    specialties: ["Heart Health", "Exercise", "Blood Pressure"],
+  },
+  {
+    id: "metabolic",
+    name: "Metabolic Health Coach",
+    icon: Apple,
+    color: "from-green-500 to-emerald-500",
+    bgColor: "bg-green-50",
+    borderColor: "border-green-200",
+    description: "Metabolism, diabetes prevention, and weight management",
+    specialties: ["Weight Management", "Diabetes Prevention", "Metabolism"],
+  },
+  {
+    id: "mental",
+    name: "Mental Wellness Coach",
+    icon: Brain,
+    color: "from-purple-500 to-indigo-500",
+    bgColor: "bg-purple-50",
+    borderColor: "border-purple-200",
+    description: "Stress management, anxiety reduction, and sleep improvement",
+    specialties: ["Stress Management", "Sleep", "Mental Health"],
+  },
+  {
+    id: "musculoskeletal",
+    name: "Musculoskeletal Coach",
+    icon: Bone,
+    color: "from-orange-500 to-amber-500",
+    bgColor: "bg-orange-50",
+    borderColor: "border-orange-200",
+    description: "Bone health, joint care, and injury prevention",
+    specialties: ["Joint Health", "Injury Prevention", "Physical Therapy"],
+  },
+  {
+    id: "nutrition",
+    name: "Nutrition & Lifestyle Coach",
+    icon: Salad,
+    color: "from-lime-500 to-green-500",
+    bgColor: "bg-lime-50",
+    borderColor: "border-lime-200",
+    description: "Dietary guidance, meal planning, and nutritional education",
+    specialties: ["Nutrition", "Meal Planning", "Healthy Eating"],
+  },
+  {
+    id: "womens",
+    name: "Women's Health Coach",
+    icon: Users,
+    color: "from-pink-500 to-rose-500",
+    bgColor: "bg-pink-50",
+    borderColor: "border-pink-200",
+    description: "Women's health, reproductive health, and hormonal balance",
+    specialties: ["Reproductive Health", "Hormonal Balance", "Pregnancy"],
+  },
+  {
+    id: "senior",
+    name: "Senior Health Coach",
+    icon: UserCircle,
+    color: "from-slate-500 to-gray-500",
+    bgColor: "bg-slate-50",
+    borderColor: "border-slate-200",
+    description: "Healthy aging, mobility, and chronic disease management",
+    specialties: ["Healthy Aging", "Mobility", "Chronic Conditions"],
+  },
+  {
+    id: "pediatric",
+    name: "Pediatric Wellness Coach",
+    icon: Baby,
+    color: "from-cyan-500 to-blue-500",
+    bgColor: "bg-cyan-50",
+    borderColor: "border-cyan-200",
+    description: "Children's health, growth, and development",
+    specialties: ["Child Development", "Pediatric Nutrition", "Growth"],
+  },
+  {
+    id: "respiratory",
+    name: "Respiratory Health Coach",
+    icon: Wind,
+    color: "from-sky-500 to-blue-500",
+    bgColor: "bg-sky-50",
+    borderColor: "border-sky-200",
+    description: "Lung health, breathing exercises, and respiratory wellness",
+    specialties: ["Lung Health", "Breathing", "Asthma Management"],
+  },
+  {
+    id: "digestive",
+    name: "Digestive Health Coach",
+    icon: Droplet,
+    color: "from-teal-500 to-cyan-500",
+    bgColor: "bg-teal-50",
+    borderColor: "border-teal-200",
+    description: "Gut health, digestive issues, and gastrointestinal wellness",
+    specialties: ["Gut Health", "Digestion", "Nutrition"],
+  },
+  {
+    id: "occupational",
+    name: "Occupational Wellness Coach",
+    icon: Briefcase,
+    color: "from-indigo-500 to-purple-500",
+    bgColor: "bg-indigo-50",
+    borderColor: "border-indigo-200",
+    description: "Workplace health, ergonomics, and work-life balance",
+    specialties: ["Workplace Health", "Ergonomics", "Work-Life Balance"],
+  },
 ];
 
-export default function Dashboard() {
+export default function DashboardPage() {
   const router = useRouter();
-  const [user, setUser] = useState<any>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [selectedAgent, setSelectedAgent] = useState<string | null>(null);
-  const [chatMessages, setChatMessages] = useState<Array<{ role: string; content: string }>>([]);
-  const [userMessage, setUserMessage] = useState("");
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [inputMessage, setInputMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [bmi, setBmi] = useState<number | null>(null);
 
   useEffect(() => {
-    // Check authentication
-    const isAuthenticated = localStorage.getItem("openmedx_authenticated");
-    if (!isAuthenticated) {
+    const profile = localStorage.getItem("userProfile");
+    if (!profile) {
       router.push("/login");
       return;
     }
-
-    // Load user data
-    const userData = localStorage.getItem("openmedx_user");
-    if (userData) {
-      const parsedUser = JSON.parse(userData);
-      setUser(parsedUser);
-      
-      // Calculate BMI
-      if (parsedUser.height && parsedUser.weight) {
-        const heightInMeters = parsedUser.height / 100;
-        const calculatedBmi = parsedUser.weight / (heightInMeters * heightInMeters);
-        setBmi(parseFloat(calculatedBmi.toFixed(1)));
-      }
-    }
+    setUserProfile(JSON.parse(profile));
   }, [router]);
 
   const handleLogout = () => {
-    localStorage.removeItem("openmedx_authenticated");
+    localStorage.removeItem("userProfile");
     router.push("/");
   };
 
   const handleAgentSelect = (agentId: string) => {
     setSelectedAgent(agentId);
-    const agent = AI_AGENTS.find(a => a.id === agentId);
-    setChatMessages([
+    setMessages([
       {
         role: "assistant",
-        content: `Hello! I'm your ${agent?.name}. I'm here to provide personalized health advisory based on evidence-based medical knowledge. How can I help you today?`
-      }
+        content: `Hello! I'm your ${AI_AGENTS.find(a => a.id === agentId)?.name}. How can I help you today?`,
+        timestamp: new Date(),
+      },
     ]);
   };
 
   const handleSendMessage = async () => {
-    if (!userMessage.trim() || !selectedAgent) return;
+    if (!inputMessage.trim() || !selectedAgent || isLoading) return;
 
-    const newMessages = [...chatMessages, { role: "user", content: userMessage }];
-    setChatMessages(newMessages);
-    setUserMessage("");
+    const userMessage: Message = {
+      role: "user",
+      content: inputMessage,
+      timestamp: new Date(),
+    };
+
+    setMessages((prev) => [...prev, userMessage]);
+    setInputMessage("");
     setIsLoading(true);
 
     try {
-      // Call AI API
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          messages: newMessages,
+          message: inputMessage,
           agentId: selectedAgent,
-          userProfile: user,
+          userProfile,
         }),
       });
 
       const data = await response.json();
-      setChatMessages([...newMessages, { role: "assistant", content: data.response }]);
+
+      const assistantMessage: Message = {
+        role: "assistant",
+        content: data.response || "I apologize, but I'm having trouble generating a response. Please try again.",
+        timestamp: new Date(),
+      };
+
+      setMessages((prev) => [...prev, assistantMessage]);
     } catch (error) {
-      console.error("Error:", error);
-      setChatMessages([...newMessages, { 
-        role: "assistant", 
-        content: "I apologize, but I'm having trouble connecting right now. Please try again in a moment." 
-      }]);
+      console.error("Error sending message:", error);
+      const errorMessage: Message = {
+        role: "assistant",
+        content: "I apologize, but I encountered an error. Please try again.",
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
     }
   };
 
-  if (!user) {
+  if (!userProfile) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <Activity className="w-12 h-12 text-blue-600 mx-auto mb-4 animate-pulse" />
-          <p className="text-slate-600">Loading your dashboard...</p>
+        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+      </div>
+    );
+  }
+
+  const getBMICategory = (bmi: number) => {
+    if (bmi < 18.5) return { label: "Underweight", color: "text-yellow-600 bg-yellow-50" };
+    if (bmi < 25) return { label: "Normal", color: "text-green-600 bg-green-50" };
+    if (bmi < 30) return { label: "Overweight", color: "text-orange-600 bg-orange-50" };
+    return { label: "Obese", color: "text-red-600 bg-red-50" };
+  };
+
+  const bmiCategory = getBMICategory(userProfile.bmi);
+
+  if (selectedAgent) {
+    const agent = AI_AGENTS.find((a) => a.id === selectedAgent);
+    if (!agent) return null;
+
+    const Icon = agent.icon;
+
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50">
+        {/* Header */}
+        <div className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-10">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSelectedAgent(null)}
+                  className="gap-2"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  Back to Agents
+                </Button>
+                <div className="flex items-center gap-3">
+                  <div className={`p-2 rounded-xl bg-gradient-to-br ${agent.color}`}>
+                    <Icon className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <h1 className="text-xl font-bold text-gray-900">{agent.name}</h1>
+                    <p className="text-sm text-gray-600">{agent.description}</p>
+                  </div>
+                </div>
+              </div>
+              <Badge variant="outline" className="gap-2">
+                <Shield className="h-3 w-3" />
+                HIPAA Compliant
+              </Badge>
+            </div>
+          </div>
+        </div>
+
+        {/* Chat Interface */}
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <Card className="h-[calc(100vh-200px)] flex flex-col shadow-xl border-2">
+            <ScrollArea className="flex-1 p-6">
+              <div className="space-y-4">
+                {messages.map((message, index) => (
+                  <div
+                    key={index}
+                    className={`flex gap-3 ${message.role === "user" ? "justify-end" : "justify-start"}`}
+                  >
+                    {message.role === "assistant" && (
+                      <Avatar className={`h-10 w-10 bg-gradient-to-br ${agent.color}`}>
+                        <AvatarFallback className="text-white">
+                          <Icon className="h-5 w-5" />
+                        </AvatarFallback>
+                      </Avatar>
+                    )}
+                    <div
+                      className={`max-w-[70%] rounded-2xl px-4 py-3 ${
+                        message.role === "user"
+                          ? "bg-blue-600 text-white"
+                          : "bg-gray-100 text-gray-900"
+                      }`}
+                    >
+                      <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                      <p className={`text-xs mt-2 ${message.role === "user" ? "text-blue-100" : "text-gray-500"}`}>
+                        {message.timestamp.toLocaleTimeString()}
+                      </p>
+                    </div>
+                    {message.role === "user" && (
+                      <Avatar className="h-10 w-10 bg-gradient-to-br from-gray-600 to-gray-800">
+                        <AvatarFallback className="text-white">
+                          {userProfile.fullName.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                    )}
+                  </div>
+                ))}
+                {isLoading && (
+                  <div className="flex gap-3 justify-start">
+                    <Avatar className={`h-10 w-10 bg-gradient-to-br ${agent.color}`}>
+                      <AvatarFallback className="text-white">
+                        <Icon className="h-5 w-5" />
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="bg-gray-100 rounded-2xl px-4 py-3">
+                      <Loader2 className="h-5 w-5 animate-spin text-gray-600" />
+                    </div>
+                  </div>
+                )}
+              </div>
+            </ScrollArea>
+
+            <div className="p-4 border-t bg-gray-50">
+              <div className="flex gap-2">
+                <Input
+                  value={inputMessage}
+                  onChange={(e) => setInputMessage(e.target.value)}
+                  onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
+                  placeholder="Type your health question..."
+                  className="flex-1"
+                  disabled={isLoading}
+                />
+                <Button
+                  onClick={handleSendMessage}
+                  disabled={isLoading || !inputMessage.trim()}
+                  className="gap-2"
+                >
+                  <Send className="h-4 w-4" />
+                  Send
+                </Button>
+              </div>
+            </div>
+          </Card>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50">
       {/* Header */}
-      <header className="bg-white border-b sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <Activity className="w-8 h-8 text-blue-600" />
-            <span className="text-2xl font-bold text-slate-900">OpenMedX</span>
-          </div>
-          <div className="flex items-center gap-4">
-            <span className="text-slate-600">Welcome, {user.fullName}</span>
+      <div className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-10 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Activity className="h-8 w-8 text-blue-600" />
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">OpenMedX Dashboard</h1>
+                <p className="text-sm text-gray-600">Welcome back, {userProfile.fullName}</p>
+              </div>
+            </div>
             <Button variant="outline" onClick={handleLogout}>
-              <LogOut className="w-4 h-4 mr-2" />
               Logout
             </Button>
           </div>
         </div>
-      </header>
+      </div>
 
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid lg:grid-cols-3 gap-8">
-          {/* Left Sidebar - Health Stats */}
-          <div className="lg:col-span-1 space-y-6">
-            <Card className="p-6">
-              <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-blue-600" />
-                Health Overview
-              </h2>
-              <div className="space-y-4">
-                <div>
-                  <p className="text-sm text-slate-600">BMI</p>
-                  <p className="text-2xl font-bold text-slate-900">
-                    {bmi || "N/A"}
-                    {bmi && (
-                      <span className="text-sm font-normal ml-2">
-                        {bmi < 18.5 ? "Underweight" : bmi < 25 ? "Normal" : bmi < 30 ? "Overweight" : "Obese"}
-                      </span>
-                    )}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-slate-600">Age</p>
-                  <p className="text-2xl font-bold text-slate-900">{user.age}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-slate-600">Height</p>
-                  <p className="text-2xl font-bold text-slate-900">{user.height} cm</p>
-                </div>
-                <div>
-                  <p className="text-sm text-slate-600">Weight</p>
-                  <p className="text-2xl font-bold text-slate-900">{user.weight} kg</p>
-                </div>
-              </div>
-            </Card>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Health Overview */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <Card className="border-2 hover:shadow-lg transition-shadow">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                <TrendingUp className="h-4 w-4 text-blue-600" />
+                BMI Status
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-gray-900">{userProfile.bmi.toFixed(1)}</div>
+              <Badge className={`mt-2 ${bmiCategory.color}`}>{bmiCategory.label}</Badge>
+            </CardContent>
+          </Card>
 
-            <Card className="p-6">
-              <h3 className="font-semibold mb-3">Wellness Goals</h3>
-              <p className="text-sm text-slate-600">{user.lifestyleGoals}</p>
-            </Card>
+          <Card className="border-2 hover:shadow-lg transition-shadow">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                <Calendar className="h-4 w-4 text-green-600" />
+                Age
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-gray-900">{userProfile.age}</div>
+              <p className="text-sm text-gray-600 mt-2">years old</p>
+            </CardContent>
+          </Card>
 
-            {user.medicalHistory && (
-              <Card className="p-6">
-                <h3 className="font-semibold mb-3">Medical History</h3>
-                <p className="text-sm text-slate-600">{user.medicalHistory}</p>
-              </Card>
-            )}
-          </div>
+          <Card className="border-2 hover:shadow-lg transition-shadow">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                <Target className="h-4 w-4 text-purple-600" />
+                Health Goals
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-gray-900 line-clamp-2">{userProfile.lifestyleGoals}</p>
+            </CardContent>
+          </Card>
 
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
-            {!selectedAgent ? (
-              <>
-                <div>
-                  <h1 className="text-3xl font-bold mb-2 text-slate-900">Your AI Health Advisory Hub</h1>
-                  <p className="text-slate-600">Select an AI health coach to get personalized guidance</p>
-                </div>
+          <Card className="border-2 hover:shadow-lg transition-shadow">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                <MessageSquare className="h-4 w-4 text-orange-600" />
+                AI Coaches
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-gray-900">12</div>
+              <p className="text-sm text-gray-600 mt-2">Available specialists</p>
+            </CardContent>
+          </Card>
+        </div>
 
-                <div className="grid md:grid-cols-2 gap-4">
-                  {AI_AGENTS.map((agent) => {
-                    const Icon = agent.icon;
-                    return (
-                      <Card
-                        key={agent.id}
-                        className="p-6 hover:shadow-lg transition-all cursor-pointer border-2 hover:border-blue-300"
-                        onClick={() => handleAgentSelect(agent.id)}
-                      >
-                        <div className="flex items-start gap-4">
-                          <div className={`p-3 rounded-lg bg-${agent.color}-100`}>
-                            <Icon className={`w-6 h-6 text-${agent.color}-600`} />
-                          </div>
-                          <div>
-                            <h3 className="font-semibold mb-1">{agent.name}</h3>
-                            <p className="text-sm text-slate-600">{agent.description}</p>
-                          </div>
-                        </div>
-                      </Card>
-                    );
-                  })}
-                </div>
-              </>
-            ) : (
-              <>
-                {/* Chat Interface */}
-                <Card className="p-6">
-                  <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-xl font-bold flex items-center gap-2">
-                      <MessageSquare className="w-5 h-5 text-blue-600" />
-                      {AI_AGENTS.find(a => a.id === selectedAgent)?.name}
-                    </h2>
-                    <Button variant="outline" onClick={() => setSelectedAgent(null)}>
-                      Back to Agents
-                    </Button>
+        {/* AI Agents Grid */}
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2 flex items-center gap-2">
+            <Zap className="h-6 w-6 text-blue-600" />
+            Your AI Health Coaches
+          </h2>
+          <p className="text-gray-600 mb-6">Select a specialized coach to start your personalized health consultation</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {AI_AGENTS.map((agent) => {
+            const Icon = agent.icon;
+            return (
+              <Card
+                key={agent.id}
+                className={`cursor-pointer hover:shadow-xl transition-all duration-300 border-2 ${agent.borderColor} ${agent.bgColor} hover:scale-105`}
+                onClick={() => handleAgentSelect(agent.id)}
+              >
+                <CardHeader>
+                  <div className="flex items-start gap-4">
+                    <div className={`p-3 rounded-xl bg-gradient-to-br ${agent.color} shadow-lg`}>
+                      <Icon className="h-6 w-6 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <CardTitle className="text-lg mb-1">{agent.name}</CardTitle>
+                      <CardDescription className="text-sm">{agent.description}</CardDescription>
+                    </div>
                   </div>
-
-                  {/* Chat Messages */}
-                  <div className="bg-slate-50 rounded-lg p-4 h-96 overflow-y-auto mb-4 space-y-4">
-                    {chatMessages.map((msg, idx) => (
-                      <div
-                        key={idx}
-                        className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-                      >
-                        <div
-                          className={`max-w-[80%] p-4 rounded-lg ${
-                            msg.role === "user"
-                              ? "bg-blue-600 text-white"
-                              : "bg-white border border-slate-200"
-                          }`}
-                        >
-                          <p className="text-sm">{msg.content}</p>
-                        </div>
-                      </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-wrap gap-2">
+                    {agent.specialties.map((specialty) => (
+                      <Badge key={specialty} variant="secondary" className="text-xs">
+                        {specialty}
+                      </Badge>
                     ))}
-                    {isLoading && (
-                      <div className="flex justify-start">
-                        <div className="bg-white border border-slate-200 p-4 rounded-lg">
-                          <p className="text-sm text-slate-600">Thinking...</p>
-                        </div>
-                      </div>
-                    )}
                   </div>
-
-                  {/* Input */}
-                  <div className="flex gap-2">
-                    <Textarea
-                      value={userMessage}
-                      onChange={(e) => setUserMessage(e.target.value)}
-                      placeholder="Ask your health question..."
-                      rows={2}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" && !e.shiftKey) {
-                          e.preventDefault();
-                          handleSendMessage();
-                        }
-                      }}
-                    />
-                    <Button
-                      onClick={handleSendMessage}
-                      disabled={isLoading || !userMessage.trim()}
-                      className="bg-blue-600 hover:bg-blue-700"
-                    >
-                      Send
-                    </Button>
-                  </div>
-                </Card>
-
-                {/* Disclaimer */}
-                <Card className="p-4 bg-yellow-50 border-yellow-200">
-                  <p className="text-sm text-yellow-900">
-                    <strong>Important:</strong> This is advisory information only. Always consult with 
-                    licensed healthcare professionals for medical decisions.
-                  </p>
-                </Card>
-              </>
-            )}
-          </div>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       </div>
     </div>
