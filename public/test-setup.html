@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Setup</title>
+</head>
+<body>
+    <h1>Setting up test user...</h1>
+    <script>
+        const testUser = {
+            email: "test@openmedx.com",
+            password: "test123",
+            fullName: "Test User",
+            emergencyContact: "Emergency Contact",
+            emergencyPhone: "+1 555-999-8888",
+            hipaaConsent: true,
+            advisoryConsent: true,
+            dataUsageConsent: true,
+            age: "35",
+            gender: "Male",
+            height: "175",
+            weight: "75",
+            medicalHistory: "No significant medical history",
+            currentMedications: "None",
+            allergies: "None",
+            lifestyleGoals: "Improve fitness, reduce stress, and maintain healthy weight"
+        };
+        
+        localStorage.setItem("openmedx_user", JSON.stringify(testUser));
+        localStorage.setItem("openmedx_authenticated", "true");
+        
+        document.body.innerHTML = '<h1>Test user created!</h1><p>Redirecting to dashboard...</p>';
+        setTimeout(() => {
+            window.location.href = '/dashboard';
+        }, 1000);
+    </script>
+</body>
+</html>
