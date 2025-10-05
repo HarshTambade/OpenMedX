@@ -298,7 +298,7 @@ This project is created for educational and hackathon purposes.
 
 Built with ❤️ for the future of healthcare AI
 
-**Contact:** muthonibrayan257@gmail.com
+**Contact:** 23207001@apsit.edu.in
 
 ---
 
