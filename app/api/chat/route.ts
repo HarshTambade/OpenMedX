@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { checkRedFlags, getMedicalKnowledge } from "@/lib/medicalKnowledge";
+import { checkRedFlags } from "@/lib/medicalKnowledge";
 import { searchMedicalKnowledge, getDrugInfo, getMentalHealthInfo } from "@/lib/medicalDatasets";
 
 // Agent-specific system prompts
@@ -39,7 +39,6 @@ export async function POST(request: NextRequest) {
     }
 
     // Get relevant medical knowledge from multiple sources
-    const basicKnowledge = getMedicalKnowledge(message);
     const advancedKnowledge = searchMedicalKnowledge(message);
     
     // Check for drug-related queries
@@ -74,12 +73,9 @@ export async function POST(request: NextRequest) {
       const bestMatch = advancedKnowledge[0];
       enhancedResponse += `**Evidence-Based Answer:**\n\n${bestMatch.answer}\n\n`;
       enhancedResponse += `**Source:** ${bestMatch.source}`;
-    } else if (basicKnowledge && basicKnowledge.length > 50) {
-      // Use basic knowledge
-      enhancedResponse += `**Medical Guidance:**\n\n${basicKnowledge}`;
     } else {
       // Generate contextual response based on query
-      enhancedResponse += generateContextualResponse(message, agentId);
+      enhancedResponse += generateContextualResponse(message);
     }
 
     // Add personalized recommendations
@@ -140,7 +136,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-function generateContextualResponse(message: string, agentId: string): string {
+function generateContextualResponse(message: string): string {
   const lowerMessage = message.toLowerCase();
   
   // Cardiovascular health

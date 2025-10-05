@@ -105,7 +105,7 @@ export default function Login() {
         </Card>
 
         <p className="text-center mt-6 text-slate-600">
-          Don't have an account?{" "}
+          Don&apos;t have an account?{" "}
           <Link href="/register" className="text-blue-600 hover:underline font-medium">
             Register now
           </Link>

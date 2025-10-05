@@ -2,13 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Upload, FileText, Image as ImageIcon, Activity, Brain, Heart, Bone, AlertCircle, CheckCircle, Loader2, Download, Share2, ArrowLeft } from "lucide-react";
+import { Upload, FileText, Image as ImageIcon, Activity, Brain, Heart, AlertCircle, CheckCircle, Loader2, Download, Share2, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import Link from "next/link";
+import Image from "next/image";
 
 interface ScanResult {
   type: string;
@@ -20,7 +21,7 @@ interface ScanResult {
 
 export default function MedicalScannerPage() {
   const router = useRouter();
-  const [userProfile, setUserProfile] = useState<any>(null);
+  const [userProfile, setUserProfile] = useState<Record<string, unknown> | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [scanType, setScanType] = useState<"lab" | "xray" | "mri" | "ct">("lab");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -217,7 +218,7 @@ export default function MedicalScannerPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <Tabs value={scanType} onValueChange={(v) => setScanType(v as any)}>
+                <Tabs value={scanType} onValueChange={(v) => setScanType(v as "lab" | "xray" | "mri" | "ct")}>
                   <TabsList className="grid grid-cols-2 gap-2">
                     <TabsTrigger value="lab" className="gap-2">
                       <FileText className="h-4 w-4" />
@@ -314,7 +315,7 @@ export default function MedicalScannerPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <img src={previewUrl} alt="Medical scan preview" className="w-full h-auto rounded-lg border" />
+                  <Image src={previewUrl} alt="Medical scan preview" className="w-full h-auto rounded-lg border" width={400} height={300} />
                 </CardContent>
               </Card>
             )}
@@ -399,7 +400,7 @@ export default function MedicalScannerPage() {
                   <Brain className="h-16 w-16 text-gray-300 mb-4" />
                   <p className="text-lg font-medium text-gray-600 mb-2">No Analysis Yet</p>
                   <p className="text-sm text-gray-500 text-center max-w-md">
-                    Upload a medical file and click "Analyze with AI" to get instant insights powered by advanced machine learning
+                    Upload a medical file and click &quot;Analyze with AI&quot; to get instant insights powered by advanced machine learning
                   </p>
                 </CardContent>
               </Card>
